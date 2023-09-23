@@ -1,5 +1,5 @@
 import express from "express";
-import { addExpense, getExpense ,deleteExpense,editExpense} from "../controllers/expense.js";
+import { addExpense, getExpense ,deleteExpense,editExpense,createPayment} from "../controllers/expense.js";
 
 
 
@@ -10,6 +10,7 @@ router.post("/",addExpense);
 router.get("/",getExpense);
 router.put("/:id",editExpense);
 router.delete("/:id",deleteExpense);
+router.post("/payment",createPayment);
 
 
 
