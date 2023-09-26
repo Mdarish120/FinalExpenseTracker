@@ -25,7 +25,7 @@ const AddExpenses = () => {
 
  
 
-  //Add Expenses
+  //Add Expenses in db
   const handleSubmit= async(e)=>{
 
     const token = JSON.parse(localStorage.getItem('token')); // Retrieve the token from localStorage
