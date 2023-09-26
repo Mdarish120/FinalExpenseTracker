@@ -28,11 +28,17 @@ const AddExpenses = () => {
   //Add Expenses
   const handleSubmit= async(e)=>{
 
+    const token = JSON.parse(localStorage.getItem('token')); // Retrieve the token from localStorage
+    const userId=JSON.parse(localStorage.getItem('userId')); 
+    const headers = {
+      Authorization: `Bearer ${token}`,
+    }
+
   e.preventDefault();
 
   if(isEdit && id){
 
-    const res=await axios.put(`http://localhost:5000/expense/${id}`,{category,description,amount});
+    const res=await axios.put(`http://localhost:5000/expense/${id}`,{category,description,amount},{headers});
     console.log(res);
     setIsEdit(false);
     setAmount("");
@@ -41,7 +47,7 @@ const AddExpenses = () => {
     getExpenses();
 
   }else{
-    const res=await axios.post(`http://localhost:5000/expense`,{category,description,amount});
+    const res=await axios.post(`http://localhost:5000/expense/${userId}`,{category,description,amount},{headers});
     console.log(res); 
     setAmount("");
     setCategory("");
@@ -59,7 +65,7 @@ const AddExpenses = () => {
   
   return (
   <>
-  <Container component="main" maxWidth="lg"  sx={{mt:7}}>
+  <Container component="main" maxWidth="lg"  sx={{mt:14}}>
 
     <Paper sx={{p:3}} elevation={6} style={{ backgroundColor: 'lightblue' }}>
 

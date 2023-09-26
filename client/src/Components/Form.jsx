@@ -32,8 +32,10 @@ const state=isSignup?"signup":"login";
 const signup= async()=>{
   const res=await axios.post(`http://localhost:5000/auth/${state}`,form);
   localStorage.setItem("token",JSON.stringify(res.data.token));
+  localStorage.setItem("userId",JSON.stringify(res.data.result.id));
    setForm({name:"",email:"",password:"",confirmPassword:""});
-   console.log(res.data)
+
+   
    navigate("/");
 }
 
@@ -48,7 +50,7 @@ signup();
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   return (
-    <Container component="main" maxWidth="xs">
+    <Container component="main" maxWidth="xs" sx={{mt:20}}>
       <Paper className={classes.paper} elevation={6}>
         <Avatar className={classes.avatar}>
           <LockIcon />

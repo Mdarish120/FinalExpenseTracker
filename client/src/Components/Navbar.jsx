@@ -1,23 +1,41 @@
-import React, { useState } from 'react';
-import {AppBar,Box,Toolbar,Typography,Button,IconButton,Avatar,Stack} from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import {AppBar,Box,Toolbar,Typography,Button,IconButton,Avatar,Stack, Hidden,Paper, Divider} from '@mui/material';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import StarHalfIcon from '@mui/icons-material/StarHalf';
 import {  toast } from 'react-toastify';
 import axios from "axios";
-
+import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
+import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 const Navbar = () => {
 
+let token=JSON.parse(localStorage.getItem("userId"));
+ 
+const [toggle,setToggle]=useState(false);
+ 
+
+
+
+  let isLogin=token?true:false;
   
     const navigate=useNavigate();
 
+  const handleLogout=()=>{
+    setToggle(false);
+    isLogin=false;
+    console.log(isLogin)
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+   
+  }
 
     const handleReport= async()=>{
 
-      if(!localStorage.getItem("isValid")){
-        toast("Please buy premium first....")
-      }else{
+      if(localStorage.getItem("isValid")){
         navigate("/report");
+      }else{
+        
+        toast("Please buy premium first....")
       }
      
     }
@@ -25,21 +43,26 @@ const Navbar = () => {
 
     const handleLeaderboard= async()=>{
 
-      if(!localStorage.getItem("isValid")){
-        toast("Please buy premium first....")
-      }else{
+      if(localStorage.getItem("isValid")){
         navigate("/leaderboard");
+      }else{
+        toast("Please buy premium first....")
       }
      
     }
 
     const handleSubmit = async () => {
-      
+      setToggle(false);
+      const token = JSON.parse(localStorage.getItem('token')); // Retrieve the token from localStorage
+
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      }
      
- 
+console.log(headers);
   
       try {
-     const response = await axios.post('http://localhost:5000/expense/payment',{name:"Premium",desc:"Buy Description...",amount:500} );
+     const response = await axios.post('http://localhost:5000/payment',{name:"Premium",desc:"Buy Description",amount:500},{headers});
        const res = response.data;
         console.log(response);
   
@@ -53,7 +76,7 @@ const Navbar = () => {
             image: 'https://dummyimage.com/600x400/000/fff',
             order_id: `${res.order_id}`,
             handler: function (response) {
-              toast("Successfully....");
+              toast("Payment Successfully....");
              localStorage.setItem("isValid","yes");
               // window.open("/", "_self");
             },
@@ -91,44 +114,80 @@ const Navbar = () => {
 
 
   return (
- <>
+ <> 
   
-      <AppBar position="static" color='primary'>
+      <AppBar color='primary'  style={{width:"100vw" }}>
         <Toolbar>
+        <Box  sx={{ flexGrow: 1 }}>
+        <Stack direction="row"  style={{display:"flex",alignItems:"center"}}>
+
           <IconButton
             size="large"
             edge="start"
             color="inherit"
             aria-label="menu"
-            sx={{ mr: 2 }}
+            sx={{
+              [useTheme().breakpoints.up('md')]: {
+                marginLeft: '5px',
+              },
+            }}
           >
          <CurrencyExchangeIcon/>
           </IconButton>
 
-      <Box  sx={{ flexGrow: 1 }}>
-        <Stack direction="row" spacing={2}>
-        <Typography variant="h6" component="div">
+          <Hidden smDown >
+        <Typography variant="h6" component="div"  sx={{mr:3}}>
             Exprense Tracker
           </Typography>
-          <Button  style={{color:"white"}} variant='outlined' >Home</Button>
-          <Button style={{color:"white"}} endIcon={<StarHalfIcon />} onClick={handleReport}>Report</Button>
-          <Button style={{color:"white"}} endIcon={<StarHalfIcon />} onClick={handleLeaderboard}>Leaderboad</Button>
+          </Hidden>
+          <Button  style={{color:"white"}} variant='outlined' onClick={()=>navigate("/")} sx={{ml:-2}}>Home</Button>
+          <Button style={{color:"white"}} endIcon={<StarHalfIcon  style={{color:"yellow"}}/>} onClick={handleReport}>Report</Button>
+          <Button style={{color:"white"}} endIcon={<StarHalfIcon style={{color:"yellow"}} />} onClick={handleLeaderboard}>Leaderboad</Button>
         </Stack>
     
       </Box>
-         
+          
+      <Hidden smDown >
           <Box sx={{mr:5}}>
             <Stack direction="row" spacing={2}>
-            <Button style={{color:"white"}} endIcon={<StarHalfIcon/>} onClick={handleSubmit}>Buy Perimium</Button>
-            <Button color="inherit" onClick={()=>navigate("/form")} >Login</Button>
+            <Button style={{color:"white"}} endIcon={<StarHalfIcon style={{color:"yellow"}} />} onClick={handleSubmit}>Buy Perimium</Button>
+            { isLogin ?  <Button color="inherit" onClick={handleLogout} >LOGOUT</Button>: <Button color="inherit" onClick={()=>navigate("/form")} >Login</Button>}
+          
           
             </Stack>
        
         
           </Box>
+          </Hidden>
+          <Hidden smUp  >
+            <IconButton sx={{ml:-1}} style={{color:"white",position:"relative"}}  onClick={()=>setToggle((prev)=>!prev)} > 
+            <MenuOpenIcon/>
+            </IconButton>
+     
+          </Hidden>
+
+          <Hidden smUp  >
+          {toggle&& <Box sx={{mr:5}}  style={{position:"absolute" ,top:50,right:1}}>
+            <Paper sx={{p:3}}>
+
+          
+            <Stack direction="column" spacing={2}>
+            <Button  endIcon={<StarHalfIcon style={{color:"yellow"}} />} onClick={handleSubmit} >Buy Perimium</Button>
+            <Divider/>
+            { isLogin ?  <Button color="inherit" onClick={handleLogout} >LOGOUT</Button>: <Button color="inherit" onClick={()=>{navigate("/form"),setToggle(false)}} >Login</Button>}
+        
+          
+            </Stack>
+            </Paper>
+        
+          </Box>}
+          </Hidden>
+
+
    
         </Toolbar>
       </AppBar>
+
   
  </>
   )

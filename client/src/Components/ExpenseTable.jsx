@@ -1,6 +1,7 @@
 import { Container, Stack, Typography ,Paper, Box, FormControl, InputLabel,
   Select, MenuItem, TextField, Button,Table, TableBody, TableCell, TableContainer,
-   TableHead, TableRow, TablePagination} from '@mui/material'
+   TableHead, TableRow, TablePagination,
+  } from '@mui/material'
    import { format } from 'date-fns';
 import React, { useState ,useEffect} from 'react';
 import axios from "axios";
@@ -14,10 +15,20 @@ const ExpenseTable = ({setAmount,setDescription,setCategory,setIsEdit,setId}) =>
 
 
   const fetchData = async (page, rowsPerPage) => {
+
+    const token = JSON.parse(localStorage.getItem('token'));
+    const userId = JSON.parse(localStorage.getItem('userId')); // Retrieve the token from localStorage
+
+    const headers = {
+      Authorization: `Bearer ${token}`,
+    }
     try {
-      const response = await axios.get(`http://localhost:5000/expense?page=${page+1}&perPage=${rowsPerPage}`);
-      setTotalItems(response.headers['x-total-count']);
-      const formattedDates = response.data.map(item => {
+      const response = await axios.get(`http://localhost:5000/expense/${userId}?page=${page+1}&perPage=${rowsPerPage}`,{headers});
+   
+     
+
+        setTotalItems(response.data.totalCount);
+      const formattedDates = response.data.expenses.map(item => {
         const formattedDate = format(new Date(item.createdAt), 'dd, MMMM yyyy');
         return { ...item, date: formattedDate };
       });
@@ -25,23 +36,25 @@ const ExpenseTable = ({setAmount,setDescription,setCategory,setIsEdit,setId}) =>
       // Update the state with the formatted data
      // This header should contain the total count from the server
       setPaginatedData(formattedDates);
-      console.log( response);
+      console.log( paginatedData);
     } catch (error) {
       console.log(error);
     }
   };
 
   useEffect(() => {
-    fetchData(page, rowsPerPage);
+   fetchData(page, rowsPerPage);
   }, [page, rowsPerPage]);
 
 
   const handleChangePage = (event, newPage) => {
-      setPage(newPage);
-    };
+    setPage(newPage);
+  };
   
-    const handleChangeRowsPerPage = (event) => {
-      setRowsPerPage(parseInt(event.target.value, 10));
+  
+    const handleChangeRowsPerPage = event => {
+      const newRowsPerPage = parseInt(event.target.value, 10);
+      setRowsPerPage(newRowsPerPage);
       setPage(0);
     };
 
@@ -57,16 +70,21 @@ const ExpenseTable = ({setAmount,setDescription,setCategory,setIsEdit,setId}) =>
            setAmount(data.amount);
            setCategory(data.category);
            setIsEdit(true);
-    
+           fetchData(page, rowsPerPage);
     }
 
 
     const handleDelete= async(id)=>{
+      const token = JSON.parse(localStorage.getItem('token')); // Retrieve the token from localStorage
+
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      }
       
       try {
-           const res=await axios.delete(`http://localhost:5000/expense/${id}`)
+           const res=await axios.delete(`http://localhost:5000/expense/${id}`,{headers});
            console.log(res);
-           getExpenses();
+           fetchData(page, rowsPerPage);
       } catch (error) {
          console.log(error);
       }
@@ -77,7 +95,7 @@ return (
     <Paper elevation={6}  style={{ backgroundColor: 'lightblue' }}>
 
   
-  <TableContainer sx={{p:3}} >
+  <TableContainer>
         <Table >
           <TableHead>
             <TableRow>
@@ -90,7 +108,7 @@ return (
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(item => (
+          {paginatedData.map((item) => (
               <TableRow key={item.id}>
                 <TableCell>{item.date}</TableCell>
                 <TableCell>{item.category}</TableCell>
@@ -107,7 +125,7 @@ return (
       </TableContainer>
       </Paper>
       <TablePagination
-     
+         rowsPerPageOptions={[5,10,20]}
         component="div"
         count={totalItems}
         rowsPerPage={rowsPerPage}

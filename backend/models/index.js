@@ -42,6 +42,9 @@ db.sequelize = sequelize
 db.authTable=authModel(sequelize,DataTypes);
 db.expenseInfo=expenseModel(sequelize,DataTypes)
 
+db.authTable.hasMany(db.expenseInfo, { foreignKey: 'userId' });
+db.expenseInfo.belongsTo(db.authTable, { foreignKey: 'userId' });
+
 
 db.sequelize.sync({ force: false})
 .then(() => {

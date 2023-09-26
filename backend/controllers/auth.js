@@ -30,7 +30,7 @@ export const signup= async(req,res)=>{
           if (olderUser) return res.status(400).json({message:"Useris alread exits"});
           const hashPassword=await bcrypt.hash(password,12);
           const createUser=await User.create(({email,password:hashPassword,name}));
-          const token=jwt.sign({email:createUser.email,id:createUser.id},secret,{expiresIn:"1h"});
+          const token=jwt.sign({email:createUser.email,id:createUser.id},secret,{expiresIn:"7h"});
           res.status(201).json({result:createUser,token});
 
     } catch (error) {
@@ -52,7 +52,7 @@ export const login= async(req,res)=>{
 
         if(!isPasswordCorrect) return res.status(400).json({message:"Invalid credentail"});
 
-        const token=jwt.sign({email:olderUser.email,id:olderUser.id},secret,{expiresIn:"1hr"});
+        const token=jwt.sign({email:olderUser.email,id:olderUser.id},secret,{expiresIn:"7hr"});
 
         res.status(200).json({result:olderUser,token});
 
@@ -94,7 +94,7 @@ export const forgetPassword = async(req,res)=>{
           res.status(200).json({ message: 'Password reset email sent. Check your inbox.' });
     } catch (error) {
         console.log(error);
-        console.error(error);
+   
         res.status(500).json({ message: 'Internal Server Error' });
     }
 }
